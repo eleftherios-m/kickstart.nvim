@@ -195,6 +195,17 @@ vim.keymap.set('t', '<C-h>', '<C-\\><C-n><C-w>h', { desc = 'Leave terminal' })
 vim.keymap.set('t', '<C-Left>', '<C-\\><C-n><C-w>h', { desc = 'Leave terminal' })
 vim.keymap.set('n', '<C-Right>', '<C-w>li', { desc = 'When entering with comtrol-right enter insert mode. Workaround for terminals' })
 
+vim.keymap.set('n', '-', function()
+  require('neo-tree.command').execute {
+    action = 'focus', -- OPTIONAL, this is the default value
+    source = 'filesystem', -- OPTIONAL, this is the default value
+    position = 'left', -- OPTIONAL, this is the default value
+    toggle = true,
+    -- reveal_file = reveal_file, -- path to file or folder to reveal
+    -- reveal_force_cwd = true, -- change cwd without asking if needed
+  }
+end, { desc = 'Open neo-tree at current file or working directory' })
+
 vim.keymap.set('n', '<Tab>', vim.cmd.bnext, { desc = 'Go to the next open buffer' })
 -- vim.keymap.set('n', '<Tab>', function()
 --   vim.cmd.bnext()

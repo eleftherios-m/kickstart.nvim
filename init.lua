@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -189,9 +189,47 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', ';;', ':%s///g<Left><Left><Left>', { desc = 'quick command line substitution in normal mode' })
+vim.keymap.set('v', ';;', ':s///g<Left><Left><Left>', { desc = 'quick command line substitution in visual mode' })
+vim.keymap.set('t', '<C-h>', '<C-\\><C-n><C-w>h', { desc = 'Leave terminal' })
+vim.keymap.set('t', '<C-Left>', '<C-\\><C-n><C-w>h', { desc = 'Leave terminal' })
+vim.keymap.set('n', '<C-Right>', '<C-w>li', { desc = 'When entering with comtrol-right enter insert mode. Workaround for terminals' })
+
+vim.keymap.set('n', '<Tab>', vim.cmd.bnext, { desc = 'Go to the next open buffer' })
+-- vim.keymap.set('n', '<Tab>', function()
+--   vim.cmd.bnext()
+-- end, { desc = 'Go to the next open buffer' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
+vim.api.nvim_create_autocmd({ 'BufEnter' }, {
+  pattern = '*',
+  command = [[if &ft !~# 'commit\|rebase' && line("'\"") > 1 && line("'\"") <= line("$") | exe 'normal! g`"' | endif]],
+  desc = 'return to last cursor posotion when reopening the file',
+})
+vim.api.nvim_create_autocmd({ 'FileType' }, {
+  pattern = 'python',
+  command = [[iabbrev <buffer> pf print(f'<C-v>{ = <C-v>}'<esc>F{a]],
+  desc = 'expand formated print',
+})
+vim.api.nvim_create_autocmd({ 'BufLeave' }, {
+  pattern = '*.py',
+  command = [[:w]],
+  desc = 'save python files when leaving the buffer',
+  --  callback = function(ev)
+  --    print(string.format('event fired: %s', vim.inspect(ev)))
+  --  end,
+})
+
+vim.api.nvim_create_autocmd({ 'TermOpen' }, {
+  pattern = '*',
+  command = [[:startinsert!]],
+  desc = 'Insert mode when entering terminal',
+  --  nested = true,
+  --  callback = function(ev)
+  --    print(string.format('event fired: %s', vim.inspect(ev)))
+  --  end,
+})
 
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
@@ -567,7 +605,7 @@ require('lazy').setup({
       local servers = {
         -- clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -653,7 +691,7 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        python = { 'isort', 'black' },
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
@@ -831,6 +869,29 @@ require('lazy').setup({
       --  Check out: https://github.com/echasnovski/mini.nvim
     end,
   },
+  {
+    'akinsho/bufferline.nvim',
+    version = '*',
+    dependencies = { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
+    config = function()
+      vim.opt.termguicolors = true
+      require('bufferline').setup {}
+    end,
+  },
+  {
+    'akinsho/git-conflict.nvim',
+    version = '*',
+    opts = {
+      default_mappings = true, -- disable buffer local mapping created by this plugin
+      default_commands = true, -- disable commands created by this plugin
+      disable_diagnostics = true, -- This will disable the diagnostics in a buffer whilst it is conflicted
+      list_opener = 'copen', -- command or function to open the conflicts list
+      highlights = { -- They must have background color, otherwise the default color will be used
+        incoming = 'DiffAdd',
+        current = 'DiffText',
+      },
+    },
+  },
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
@@ -874,11 +935,11 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.

@@ -194,6 +194,35 @@ vim.keymap.set('v', ';;', ':s///g<Left><Left><Left>', { desc = 'quick command li
 vim.keymap.set('t', '<C-h>', '<C-\\><C-n><C-w>h', { desc = 'Leave terminal' })
 vim.keymap.set('t', '<C-Left>', '<C-\\><C-n><C-w>h', { desc = 'Leave terminal' })
 vim.keymap.set('n', '<C-Right>', '<C-w>li', { desc = 'When entering with comtrol-right enter insert mode. Workaround for terminals' })
+vim.keymap.set('n', '<F5>', ':72 vs <bar> term ipython<Enter>', { desc = 'open terminal in a split' })
+vim.keymap.set('n', '<F6>', '<C-w><C-l>G<C-w><C-h>', { desc = 'open terminal in a split' })
+
+vim.keymap.set('n', '<leader><Enter>', function()
+  local buf_id
+  for channel_index, channel_entry in ipairs(vim.api.nvim_list_chans()) do
+    if channel_entry['mode'] == 'terminal' then
+      buf_id = channel_entry['id']
+    end
+  end
+
+  local control_J = vim.api.nvim_replace_termcodes('<C-J>', true, true, true)
+  local control_Q = vim.api.nvim_replace_termcodes('<C-Q>', true, true, true)
+  -- print(vim.inspect(line))
+  local start_cell = vim.fn.search('#---', 'Wb')
+  local end_cell = vim.fn.search('#---', 'W')
+  if end_cell == 0 then
+    end_cell = vim.fn.line '$'
+  end
+
+  local input_lines = vim.fn.getline(start_cell, end_cell)
+  -- vim.fn.chansend(buf_id, "%%capture --no-stdout" .. "\n")
+  for line_index, line in ipairs(input_lines) do
+    if line ~= '' and vim.fn.match(line, '#---') == -1 then
+      vim.fn.chansend(buf_id, line .. control_Q .. control_J)
+    end
+  end
+  vim.fn.chansend(buf_id, control_J)
+end)
 
 vim.keymap.set('n', '-', function()
   require('neo-tree.command').execute {
@@ -216,7 +245,7 @@ vim.keymap.set('n', '<Tab>', vim.cmd.bnext, { desc = 'Go to the next open buffer
 vim.api.nvim_create_autocmd({ 'BufEnter' }, {
   pattern = '*',
   command = [[if &ft !~# 'commit\|rebase' && line("'\"") > 1 && line("'\"") <= line("$") | exe 'normal! g`"' | endif]],
-  desc = 'return to last cursor posotion when reopening the file',
+  desc = 'return to last cursor position when reopening the file',
 })
 vim.api.nvim_create_autocmd({ 'FileType' }, {
   pattern = 'python',
@@ -225,12 +254,17 @@ vim.api.nvim_create_autocmd({ 'FileType' }, {
 })
 vim.api.nvim_create_autocmd({ 'BufLeave' }, {
   pattern = '*.py',
-  command = [[:w]],
+  command = [[:w | normal m"]],
   desc = 'save python files when leaving the buffer',
-  --  callback = function(ev)
-  --    print(string.format('event fired: %s', vim.inspect(ev)))
-  --  end,
 })
+-- vim.api.nvim_create_autocmd({ 'BufLeave' }, {
+--   pattern = '*',
+--   -- command = [[:normal mp]],
+--   desc = 'save marker',
+--   callback = function(ev)
+--     print(string.format('event fired: %s', vim.inspect(ev)))
+--   end,
+-- })
 
 vim.api.nvim_create_autocmd({ 'TermOpen' }, {
   pattern = '*',
@@ -836,7 +870,17 @@ require('lazy').setup({
       vim.cmd.colorscheme 'tokyonight-night'
 
       -- You can configure highlights by doing something like:
-      vim.cmd.hi 'Comment gui=none'
+      vim.cmd.hi 'Comment guifg=#fff7e0'
+      -- vim.cmd.hi 'Comment guifg=#adcfff'
+    end,
+    config = function()
+      require('tokyonight').setup {
+        on_colors = function(colors)
+          colors.bg = '#151515'
+          -- colors.hint = colors.orange
+          -- colors.error = '#ff0000'
+        end,
+      }
     end,
   },
 
@@ -886,7 +930,14 @@ require('lazy').setup({
     dependencies = { 'nvim-tree/nvim-web-devicons', enabled = vim.g.have_nerd_font },
     config = function()
       vim.opt.termguicolors = true
-      require('bufferline').setup {}
+      require('bufferline').setup {
+        highlights = {
+          buffer_selected = {
+            -- bg = '#FFC067',
+            bg = '#4169E1',
+          },
+        },
+      }
     end,
   },
   {

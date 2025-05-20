@@ -230,8 +230,19 @@ vim.keymap.set('n', '-', function()
     source = 'filesystem', -- OPTIONAL, this is the default value
     position = 'left', -- OPTIONAL, this is the default value
     toggle = true,
+    reveal = false,
     -- reveal_file = reveal_file, -- path to file or folder to reveal
     -- reveal_force_cwd = true, -- change cwd without asking if needed
+  }
+end, { desc = 'Open neo-tree at current file or working directory' })
+
+vim.keymap.set('n', '+', function()
+  require('neo-tree.command').execute {
+    action = 'focus', -- OPTIONAL, this is the default value
+    source = 'filesystem', -- OPTIONAL, this is the default value
+    position = 'left', -- OPTIONAL, this is the default value
+    toggle = true,
+    reveal = true,
   }
 end, { desc = 'Open neo-tree at current file or working directory' })
 
@@ -257,6 +268,7 @@ vim.api.nvim_create_autocmd({ 'BufLeave' }, {
   command = [[:w | normal m"]],
   desc = 'save python files when leaving the buffer',
 })
+
 -- vim.api.nvim_create_autocmd({ 'BufLeave' }, {
 --   pattern = '*',
 --   -- command = [[:normal mp]],
@@ -464,12 +476,21 @@ require('lazy').setup({
         -- You can put your default mappings / updates / etc. in here
         --  All the info you're looking for is in `:help telescope.setup()`
         --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
+        defaults = {
+          file_ignore_patterns = {
+            'datasets',
+            'development',
+            'data_directory',
+          },
+          -- mappings = {
+          --   i = { ['<c-enter>'] = 'to_fuzzy_refine' },
+          -- },
+        },
+        pickers = {
+          current_buffer_fuzzy_find = {
+            previewer = false,
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
@@ -792,7 +813,8 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        python = { 'isort', 'black' },
+        -- python = { 'isort', 'black' },
+        python = { 'ruff', 'isort', 'black' },
         --
         -- You can use 'stop_after_first' to run the first available formatter from the list
         -- javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -1000,6 +1022,7 @@ require('lazy').setup({
       }
     end,
   },
+  { 'sindrets/diffview.nvim' },
   {
     'akinsho/git-conflict.nvim',
     version = '*',

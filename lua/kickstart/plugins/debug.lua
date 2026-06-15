@@ -13,6 +13,7 @@ vim.pack.add {
   'https://github.com/mason-org/mason.nvim',
   'https://github.com/jay-babu/mason-nvim-dap.nvim',
   'https://github.com/leoluz/nvim-dap-go',
+  'https://github.com/mfussenegger/nvim-dap-python'
 }
 
 -- Basic debugging keymaps, feel free to change to your liking!
@@ -42,6 +43,7 @@ require('mason-nvim-dap').setup {
   ensure_installed = {
     -- Update this to ensure that you have the debuggers for the langs you want
     'delve',
+    'python',
   },
 }
 
@@ -93,3 +95,4 @@ require('dap-go').setup {
     detached = vim.fn.has 'win32' == 0,
   },
 }
+require('dap-python').setup()

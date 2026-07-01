@@ -12,7 +12,7 @@ vim.pack.add {
   'https://github.com/nvim-neotest/nvim-nio',
   'https://github.com/mason-org/mason.nvim',
   'https://github.com/jay-babu/mason-nvim-dap.nvim',
-  'https://github.com/leoluz/nvim-dap-go',
+  'https://github.com/mfussenegger/nvim-dap-python'
 }
 
 -- Basic debugging keymaps, feel free to change to your liking!
@@ -27,8 +27,17 @@ vim.keymap.set('n', '<F7>', function() require('dapui').toggle() end, { desc = '
 
 local dap = require 'dap'
 local dapui = require 'dapui'
+dap.configurations.python = {
+  {
+    type = 'debugpy';
+    request = 'launch';
+    name = "Launch Calibration Supervisor";
+    program = "${workspaceFolder}/tergite_autocalibration/tools/debug/start_calibration_supervisor.py";
+  },
+}
 
 require('mason-nvim-dap').setup {
+
   -- Makes a best effort to setup the various debuggers with
   -- reasonable debug configurations
   automatic_installation = true,
@@ -41,7 +50,7 @@ require('mason-nvim-dap').setup {
   -- online, please don't ask me how to install them :)
   ensure_installed = {
     -- Update this to ensure that you have the debuggers for the langs you want
-    'delve',
+    'python',
   },
 }
 
@@ -86,10 +95,11 @@ dap.listeners.before.event_terminated['dapui_config'] = dapui.close
 dap.listeners.before.event_exited['dapui_config'] = dapui.close
 
 -- Install golang specific config
-require('dap-go').setup {
-  delve = {
-    -- On Windows delve must be run attached or it crashes.
-    -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
-    detached = vim.fn.has 'win32' == 0,
-  },
-}
+-- require('dap-go').setup {
+--   delve = {
+--     -- On Windows delve must be run attached or it crashes.
+--     -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
+--     detached = vim.fn.has 'win32' == 0,
+--   },
+-- }
+require('dap-python').setup()
